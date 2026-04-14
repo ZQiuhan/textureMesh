@@ -3,6 +3,7 @@ import styled from "styled-components";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TextureMesh } from "./utils/TextureMesh";
+import { COLMAPExporter } from "./utils/COLMAPExporter";
 
 const Warp = styled.div`
     width: 100vw;
@@ -169,10 +170,18 @@ const Demo5: React.FC<Demo5Props> = () => {
                 camera.quaternion.multiplyQuaternions(horizontalQuat, camera.quaternion);
                 camera.quaternion.multiply(verticalQuat);
 
-                // 限制垂直角度
-                const euler = new THREE.Euler().setFromQuaternion(camera.quaternion);
-                euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
-                camera.quaternion.setFromEuler(euler);
+                // 只限制俯仰角，不影响偏航角
+                // 将当前四元数转换为欧拉角来检查俯仰角
+                const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+
+                // 如果俯仰角超出限制，只调整俯仰部分
+                if (euler.x > Math.PI / 2) {
+                    euler.x = Math.PI / 2;
+                    camera.quaternion.setFromEuler(euler);
+                } else if (euler.x < -Math.PI / 2) {
+                    euler.x = -Math.PI / 2;
+                    camera.quaternion.setFromEuler(euler);
+                }
 
                 lastMousePosRef.current = { x: e.clientX, y: e.clientY };
             }
@@ -183,6 +192,7 @@ const Demo5: React.FC<Demo5Props> = () => {
                 isDraggingRef.current = false;
                 container.style.cursor = 'default';
             }
+            lastMousePosRef.current= { x: 0, y: 0 };
         };
 
         container.addEventListener('mousedown', handleMouseDown);
@@ -401,6 +411,17 @@ const Demo5: React.FC<Demo5Props> = () => {
             panoramaDirectory: panoramaDirectory,
         });
         textureMesh.start();
+        (async ()=>{
+            const exporter = new COLMAPExporter({
+                scene: scene,
+                meshPath: meshPath,
+                metaPath: metaPath,
+                panoramaDirectory: panoramaDirectory,
+            });
+            // 选择导出格式
+            // await exporter.exportToCOLMAP();
+        })()
+
     }, [initialized]);
 
     return (

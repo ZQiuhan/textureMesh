@@ -49,7 +49,7 @@ export class TextureMesh {
         this.meshOptions = params;
     }
 
-    private async parseMeta() {
+    protected async parseMeta() {
         const metaPath = this.meshOptions.metaPath;
         // 加载文件为json
         const meta: ProjectData = await fetch(metaPath).then((res) => res.json());
@@ -111,9 +111,6 @@ export class TextureMesh {
         const { scene } = this.meshOptions;
 
         for (let i = 0; i < this.panoramaPos.length; i++) {
-            if(i!=2){
-                continue
-            }
             const { url, pos } = this.panoramaPos[i];
             const originalRotation = this.panoramaPos[i].rotation;
             const cubeMap = await TextureMesh.convertPanoramaToCubemap(url, 512);
@@ -166,6 +163,10 @@ export class TextureMesh {
                             .makeRotationFromQuaternion(originalRotation)
                             .multiply(new Matrix4().makeRotationFromEuler(rotation))
                     );
+                // console.log("++++++++++++++++++ index:",i)
+                // console.log("++++++++++++++++++ name:",name)
+                // console.log("++++++++++++++++++ position:",pos.clone())
+                // console.log("++++++++++++++++++ rotation:",new Quaternion().setFromEuler(euler))
                 const frustum = TextureMesh.createFrustum({
                     position: pos,
                     rotation: euler,
@@ -217,7 +218,6 @@ export class TextureMesh {
 
             // 加载纹理
             const texture = new THREE.TextureLoader().load(textureUrl);
-            // texture.flipY = true
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.DoubleSide,
