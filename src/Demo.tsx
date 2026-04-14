@@ -937,12 +937,12 @@ const CloudPanoramaPositionDemo: React.FC<CloudPanoramaPositionDemoProps> = () =
 
 // 以下是原有的全景图转立方体贴图工具函数
 export interface CubemapFaces {
-    px: string;
-    nx: string;
-    py: string;
-    ny: string;
-    pz: string;
-    nz: string;
+    px: string; // positive X - 右侧 (+X轴方向)
+    nx: string; // negative X - 左侧 (-X轴方向)
+    py: string; // positive Y - 上方 (+Y轴方向)
+    ny: string; // negative Y - 下方 (-Y轴方向)
+    pz: string; // positive Z - 前方 (+Z轴方向)
+    nz: string; // negative Z - 后方 (-Z轴方向)
 }
 
 function loadImageElement(src: string): Promise<HTMLImageElement> {
