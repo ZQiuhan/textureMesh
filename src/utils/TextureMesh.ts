@@ -53,6 +53,7 @@ export class TextureMesh {
         const metaPath = this.meshOptions.metaPath;
         // 加载文件为json
         const meta: ProjectData = await fetch(metaPath).then((res) => res.json());
+        meta.stationList = [meta.stationList[0]];
         this.panoramaPos = meta.stationList.map(item => {
             const pos = new THREE.Vector3(item.pose.x, item.pose.y, item.pose.z);
             // meta 中 q0123 对应 zyxw
@@ -116,42 +117,42 @@ export class TextureMesh {
             const cubeMap = await TextureMesh.convertPanoramaToCubemap(url, 512);
 
             const directions = [
-                {
-                    name: '上',
-                    key: 'py',
-                    color: 0x4287f5, // 蓝色
-                    rotation: new THREE.Euler(-Math.PI / 2, 0, Math.PI / 2), // 向上看
-                },
-                {
-                    name: '下',
-                    key: 'ny',
-                    color: 0xf5a442, // 橙色
-                    rotation: new THREE.Euler(Math.PI / 2, 0, -Math.PI / 2), // 向下看
-                },
-                {
-                    name: '左',
-                    key: 'nx',
-                    color: 0x42f554, // 绿色
-                    rotation: new THREE.Euler(0, 0, Math.PI), // 向左看
-                },
+                // {
+                //     name: '上',
+                //     key: 'py',
+                //     color: 0x4287f5, // 蓝色
+                //     rotation: new THREE.Euler(-Math.PI / 2, 0, Math.PI / 2), // 向上看
+                // },
+                // {
+                //     name: '下',
+                //     key: 'ny',
+                //     color: 0xf5a442, // 橙色
+                //     rotation: new THREE.Euler(Math.PI / 2, 0, -Math.PI / 2), // 向下看
+                // },
+                // {
+                //     name: '左',
+                //     key: 'nx',
+                //     color: 0x42f554, // 绿色
+                //     rotation: new THREE.Euler(0, 0, Math.PI), // 向左看
+                // },
                 {
                     name: '右',
                     key: 'px',
                     color: 0xf54242, // 红色
                     rotation: new THREE.Euler(0, Math.PI, Math.PI), // 向右看
                 },
-                {
-                    name: '前',
-                    key: 'pz',
-                    color: 0xf5e642, // 黄色
-                    rotation: new THREE.Euler(0, -Math.PI / 2, Math.PI), // 向前看
-                },
-                {
-                    name: '后',
-                    key: 'nz',
-                    color: 0xbf42f5, // 紫色
-                    rotation: new THREE.Euler(0, Math.PI / 2, Math.PI), // 向后看
-                }
+                // {
+                //     name: '前',
+                //     key: 'pz',
+                //     color: 0xf5e642, // 黄色
+                //     rotation: new THREE.Euler(0, -Math.PI / 2, Math.PI), // 向前看
+                // },
+                // {
+                //     name: '后',
+                //     key: 'nz',
+                //     color: 0xbf42f5, // 紫色
+                //     rotation: new THREE.Euler(0, Math.PI / 2, Math.PI), // 向后看
+                // }
             ];
             directions.forEach(item => {
                 const { name, key, color, rotation } = item;
@@ -163,10 +164,6 @@ export class TextureMesh {
                             .makeRotationFromQuaternion(originalRotation)
                             .multiply(new Matrix4().makeRotationFromEuler(rotation))
                     );
-                // console.log("++++++++++++++++++ index:",i)
-                // console.log("++++++++++++++++++ name:",name)
-                // console.log("++++++++++++++++++ position:",pos.clone())
-                // console.log("++++++++++++++++++ rotation:",new Quaternion().setFromEuler(euler))
                 const frustum = TextureMesh.createFrustum({
                     position: pos,
                     rotation: euler,
@@ -178,7 +175,6 @@ export class TextureMesh {
                     showFarPlaneTexture: true
                 })
                 scene.add(frustum);
-
             })
         }
     }
@@ -229,7 +225,7 @@ export class TextureMesh {
 
             // 将平面放置在远平面位置（沿相机的局部Z轴正向）
             farPlaneMesh.position.set(0, 0, -far);
-            farPlaneMesh.rotation.y = Math.PI;
+            // farPlaneMesh.rotation.y = Math.PI;
             // 将远平面添加到camera对象上，这样它会跟随相机的位置和旋转
             camera.add(farPlaneMesh);
 
@@ -259,6 +255,8 @@ export class TextureMesh {
         src: string,
         faceSize: number = 1024,
         minBlurY: number = Infinity,
+        flipX: boolean = false,
+        flipY: boolean = false,
     ): Promise<CubemapFaces> {
 
         const img = await this.loadImageElement(src);
@@ -280,9 +278,20 @@ export class TextureMesh {
 
             for (let j = 0; j < faceSize; j++) {
                 for (let i = 0; i < faceSize; i++) {
+                    // 应用反转逻辑
+                    let sampleX = i;
+                    let sampleY = j;
+
+                    if (flipX) {
+                        sampleX = faceSize - 1 - i;
+                    }
+                    if (flipY) {
+                        sampleY = faceSize - 1 - j;
+                    }
+
                     const idx = (j * faceSize + i) * 4;
 
-                    const [ vx, vy, vz ] = this.dirFromCubeFace(face, i, j, faceSize);
+                    const [ vx, vy, vz ] = this.dirFromCubeFace(face, sampleX, sampleY, faceSize);
                     const [ u, v ] = this.dirToUV(vx, vy, vz, srcW, srcH);
 
                     let isOut = false;

@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TextureMesh } from "./utils/TextureMesh";
 import { COLMAPExporter } from "./utils/COLMAPExporter";
+import { TextureProjector } from "./utils/TextureProjector";
 
 const Warp = styled.div`
     width: 100vw;
@@ -410,16 +411,25 @@ const Demo5: React.FC<Demo5Props> = () => {
             metaPath: metaPath,
             panoramaDirectory: panoramaDirectory,
         });
-        textureMesh.start();
+        // textureMesh.start();
         (async ()=>{
-            const exporter = new COLMAPExporter({
+            // const exporter = new COLMAPExporter({
+            //     scene: scene,
+            //     meshPath: meshPath,
+            //     metaPath: metaPath,
+            //     panoramaDirectory: panoramaDirectory,
+            // });
+            // 选择导出格式
+            // await exporter.exportToCOLMAP();
+            const projector = new TextureProjector({
                 scene: scene,
                 meshPath: meshPath,
                 metaPath: metaPath,
                 panoramaDirectory: panoramaDirectory,
             });
-            // 选择导出格式
-            // await exporter.exportToCOLMAP();
+
+            // 开始投影和导出
+            await projector.start();
         })()
 
     }, [initialized]);
