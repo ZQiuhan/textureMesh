@@ -53,7 +53,7 @@ export class TextureMesh {
         const metaPath = this.meshOptions.metaPath;
         // 加载文件为json
         const meta: ProjectData = await fetch(metaPath).then((res) => res.json());
-        meta.stationList = [meta.stationList[0]];
+        // meta.stationList = [meta.stationList[0]];
         this.panoramaPos = meta.stationList.map(item => {
             const pos = new THREE.Vector3(item.pose.x, item.pose.y, item.pose.z);
             // meta 中 q0123 对应 zyxw
@@ -114,45 +114,45 @@ export class TextureMesh {
         for (let i = 0; i < this.panoramaPos.length; i++) {
             const { url, pos } = this.panoramaPos[i];
             const originalRotation = this.panoramaPos[i].rotation;
-            const cubeMap = await TextureMesh.convertPanoramaToCubemap(url, 512);
+            const cubeMap = await TextureMesh.convertPanoramaToCubemap(url, 512,Infinity,true,true);
 
             const directions = [
-                // {
-                //     name: '上',
-                //     key: 'py',
-                //     color: 0x4287f5, // 蓝色
-                //     rotation: new THREE.Euler(-Math.PI / 2, 0, Math.PI / 2), // 向上看
-                // },
-                // {
-                //     name: '下',
-                //     key: 'ny',
-                //     color: 0xf5a442, // 橙色
-                //     rotation: new THREE.Euler(Math.PI / 2, 0, -Math.PI / 2), // 向下看
-                // },
-                // {
-                //     name: '左',
-                //     key: 'nx',
-                //     color: 0x42f554, // 绿色
-                //     rotation: new THREE.Euler(0, 0, Math.PI), // 向左看
-                // },
+                {
+                    name: '上',
+                    key: 'py',
+                    color: 0x4287f5, // 蓝色
+                    rotation: new THREE.Euler(-Math.PI / 2, 0, Math.PI / 2), // 向上看
+                },
+                {
+                    name: '下',
+                    key: 'ny',
+                    color: 0xf5a442, // 橙色
+                    rotation: new THREE.Euler(Math.PI / 2, 0, -Math.PI / 2), // 向下看
+                },
+                {
+                    name: '左',
+                    key: 'nx',
+                    color: 0x42f554, // 绿色
+                    rotation: new THREE.Euler(0, 0, Math.PI), // 向左看
+                },
                 {
                     name: '右',
                     key: 'px',
                     color: 0xf54242, // 红色
                     rotation: new THREE.Euler(0, Math.PI, Math.PI), // 向右看
                 },
-                // {
-                //     name: '前',
-                //     key: 'pz',
-                //     color: 0xf5e642, // 黄色
-                //     rotation: new THREE.Euler(0, -Math.PI / 2, Math.PI), // 向前看
-                // },
-                // {
-                //     name: '后',
-                //     key: 'nz',
-                //     color: 0xbf42f5, // 紫色
-                //     rotation: new THREE.Euler(0, Math.PI / 2, Math.PI), // 向后看
-                // }
+                {
+                    name: '前',
+                    key: 'pz',
+                    color: 0xf5e642, // 黄色
+                    rotation: new THREE.Euler(0, -Math.PI / 2, Math.PI), // 向前看
+                },
+                {
+                    name: '后',
+                    key: 'nz',
+                    color: 0xbf42f5, // 紫色
+                    rotation: new THREE.Euler(0, Math.PI / 2, Math.PI), // 向后看
+                }
             ];
             directions.forEach(item => {
                 const { name, key, color, rotation } = item;
@@ -214,6 +214,7 @@ export class TextureMesh {
 
             // 加载纹理
             const texture = new THREE.TextureLoader().load(textureUrl);
+            texture.flipY=false;
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.DoubleSide,
